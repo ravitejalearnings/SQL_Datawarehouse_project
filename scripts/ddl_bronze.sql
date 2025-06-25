@@ -1,108 +1,92 @@
-create or alter procedure bronze.load_bronze as 
-begin
-	
-	print '===============================================';
-	print 'Loading Bronze layer';
-	print '===============================================';
+use master
+================================================================
+-- Creating of database, schema like bronze, silver, gold
+================================================================
+-- create database
+create database datawarehouse
+
+use datawarehouse;
 
 
-	print '------------------------------------------------';
-	print 'loading CRM tables';
-	print '------------------------------------------------';
+-- create different schema within database
+create schema bronze;
 
-	
-	print '>> Truncating table : [bronze].[crm_cust_info]';
-	truncate table [bronze].[crm_cust_info];
+create schema silver;
 
-	print '>> Inserting data into : [bronze].[crm_cust_info]';
+create schema gold;
 
 
-	bulk insert [bronze].[crm_cust_info]
-	from "C:\Users\Ravi\Downloads\sql-data-warehouse-project\datasets\source_crm\cust_info.csv"
-	with (
-		firstrow = 2,
-		fieldterminator = ',',
-		tablock
-	);
+================================================================
+-- create ddl statements as per source data
+================================================================
 
 
-	-- prod table
+-- Create tables 
+IF OBJECT_ID('bronze.crm_cust_info', 'U') IS NOT NULL
+    DROP TABLE bronze.crm_cust_info;
+CREATE TABLE bronze.crm_cust_info (
+    cst_id INT ,
+    cst_key VARCHAR(20),
+    cst_firstname VARCHAR(50),
+    cst_lastname VARCHAR(50),
+    cst_marital_status CHAR(1),     
+    cst_gndr CHAR(1),
+    cst_create_date DATE
+);
 
-	print '>> Truncating table : [bronze].[crm_prd_info]';
-	truncate table [bronze].[crm_prd_info];
-
-	print '>> Inserting data into : [bronze].[crm_prd_info]';
-
-	bulk insert [bronze].[crm_prd_info]
-	from "C:\Users\Ravi\Downloads\sql-data-warehouse-project\datasets\source_crm\prd_info.csv"
-	with (
-		firstrow = 2,
-		fieldterminator = ',',
-		tablock
-	);
-
-
-	-- sales table
-
-	print '>> Truncating table : [bronze].[crm_sales_details]';
-	truncate table [bronze].[crm_sales_details];
-
-	print '>> Inserting data into : [bronze].[crm_sales_details]';
-
-	bulk insert [bronze].[crm_sales_details]
-	from "C:\Users\Ravi\Downloads\sql-data-warehouse-project\datasets\source_crm\sales_details.csv"
-	with (
-		firstrow = 2,
-		fieldterminator = ',',
-		ROWTERMINATOR = '\n',
-		tablock
-	);
+if object_id('bronze.crm_prd_info','U') is not null
+	drop table bronze.crm_prd_info;
+CREATE TABLE bronze.crm_prd_info (
+    prd_id INT,
+    prd_key VARCHAR(50),
+    prd_nm VARCHAR(100),
+    prd_cost DECIMAL(10, 2),
+    prd_line VARCHAR(100),
+    prd_start_dt DATE,
+    prd_end_dt DATE
+);
 
 
-	print '------------------------------------------------';
-	print 'loading ERP tables';
-	print '------------------------------------------------';
 
-	print '>> Truncating table : [bronze].[erp_CUST_AZ12]';
-	truncate table [bronze].[erp_CUST_AZ12];
-
-	print '>> Inserting data into : [bronze].[erp_CUST_AZ12]';
-
-	bulk insert [bronze].[erp_CUST_AZ12]
-	from "C:\Users\Ravi\Downloads\sql-data-warehouse-project\datasets\source_erp\CUST_AZ12.csv"
-	with (
-		firstrow = 2,
-		fieldterminator = ',',
-		tablock
-	);
+if object_id('bronze.crm_sales_details','U') is not null
+	drop table bronze.crm_sales_details;
+CREATE TABLE bronze.crm_sales_details (
+    sls_ord_num    VARCHAR(20),       
+    sls_prd_key    VARCHAR(50),       
+    sls_cust_id    INT,               
+    sls_order_dt   INT,              
+    sls_ship_dt    INT,              
+    sls_due_dt     INT,              
+    sls_sales      INT,     
+    sls_quantity   INT,               
+    sls_price      INT      
+);
 
 
-	print '>> Truncating table : [bronze].[erp_LOC_A101]';
-	truncate table [bronze].[erp_LOC_A101];
-
-	print '>> Inserting data into : [bronze].[erp_LOC_A101]';
-
-	bulk insert [bronze].[erp_LOC_A101]
-	from "C:\Users\Ravi\Downloads\sql-data-warehouse-project\datasets\source_erp\LOC_A101.csv"
-	with (
-		firstrow = 2,
-		fieldterminator = ',',
-		tablock
-	);
 
 
-	print '>> Truncating table : [bronze].[erp_PX_CAT_G1V2]';
-	truncate table [bronze].[erp_PX_CAT_G1V2];
+if object_id('bronze.erp_CUST_AZ12','U') is not null
+	drop table bronze.erp_CUST_AZ12;
+CREATE TABLE bronze.erp_CUST_AZ12 (
+    CID VARCHAR(20) ,
+    BDATE DATE,
+    GEN VARCHAR(10)
+);
 
-	print '>> Inserting data into : [bronze].[erp_PX_CAT_G1V2]';
-	bulk insert [bronze].[erp_PX_CAT_G1V2]
-	from "C:\Users\Ravi\Downloads\sql-data-warehouse-project\datasets\source_erp\PX_CAT_G1V2.csv"
-	with (
-		firstrow = 2,
-		fieldterminator = ',',
-		tablock
-	);
 
-end 
+if object_id('bronze.erp_LOC_A101','U') is not null
+	drop table bronze.erp_LOC_A101;
+CREATE TABLE bronze.erp_LOC_A101 (
+    CID VARCHAR(20),
+    CNTRY VARCHAR(50)
+);
 
-exec [bronze].[load_bronze]
+
+if object_id('bronze.erp_PX_CAT_G1V2','U') is not null
+	drop table bronze.erp_PX_CAT_G1V2;
+CREATE TABLE bronze.erp_PX_CAT_G1V2 (
+    id VARCHAR(10),
+    cat VARCHAR(50),
+    subcat VARCHAR(100),
+    maintenance VARCHAR(3)
+);
