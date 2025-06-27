@@ -271,3 +271,42 @@ from [bronze].[erp_PX_CAT_G1V2];
 select * 
 from [bronze].[erp_PX_CAT_G1V2]
 where cat != trim(cat) or subcat != trim(subcat) or maintenance != trim(maintenance)
+
+
+************************************************************************************************************
+-- integration checks
+
+select
+	crm_cst.cst_gndr,
+	erp_cst.gen,
+	case
+		when crm_cst.cst_gndr != 'n/a' then crm_cst.cst_gndr
+		else coalesce(erp_cst.gen,'n/a')
+	end as new_gen
+
+from [silver].[crm_cust_info] as crm_cst
+left join [silver].[erp_CUST_AZ12] as erp_cst
+on crm_cst.cst_key = erp_cst.cid
+left join [silver].[erp_LOC_A101] as erp_loc
+on crm_cst.cst_key = erp_loc.cid
+
+
+************************************************************************************************************
+
+
+select count(*) from gold.fact_sales
+
+
+select count(*) from gold.fact_sales as s
+left join gold.dim_customer as c
+	on s.customer_key = c.customer_key
+left join gold.dim_products as p
+	on s.product_key = p.product_key
+
+
+select * from gold.fact_sales as s
+left join gold.dim_customer as c
+	on s.customer_key = c.customer_key
+left join gold.dim_products as p
+	on s.product_key = p.product_key
+where c.customer_key is null or p.product_key is null
